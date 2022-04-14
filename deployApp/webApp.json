@@ -1,0 +1,66 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appPlanName": {
+            "type": "string",
+            "minLength": 1
+        },
+        "appPlanSKU": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ]
+        },
+        "appPlanWorkerSize": {
+            "type": "string",
+            "allowedValues": [
+                "0",
+                "1",
+                "2"
+            ],
+            "defaultValue": "0"
+        }
+    },
+    "resources": [
+        {
+            "name": "[variables('webPlaceName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-08-01",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('appPlanName'))]"
+            ],
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('appPlanName'))]": "Resource",
+                "displayName": "webPlace"
+            },
+            "properties": {
+                "name": "[variables('webPlaceName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', parameters('appPlanName'))]"
+            }
+        },
+        {
+            "name": "[parameters('appPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2014-06-01",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "appPlan"
+            },
+            "properties": {
+                "name": "[parameters('appPlanName')]",
+                "sku": "[parameters('appPlanSKU')]",
+                "workerSize": "[parameters('appPlanWorkerSize')]",
+                "numberOfWorkers": 1
+            }
+        }
+    ],
+    "variables": {
+        "webPlaceName": "[concat('webPlace', uniqueString(resourceGroup().id))]"
+    }
+}

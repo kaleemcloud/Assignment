@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appplanName": {
+            "type": "string",
+            "minLength": 1
+        },
+        "appplanSKU": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Free"
+        },
+        "appplanWorkerSize": {
+            "type": "string",
+            "allowedValues": [
+                "0",
+                "1",
+                "2"
+            ],
+            "defaultValue": "0"
+        }
+    },
+    "resources": [
+        {
+            "name": "[variables('chennaiappName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-08-01",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('appplanName'))]"
+            ],
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('appplanName'))]": "Resource",
+                "displayName": "chennaiapp"
+            },
+            "properties": {
+                "name": "[variables('chennaiappName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', parameters('appplanName'))]"
+            }
+        },
+        {
+            "name": "[parameters('appplanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2014-06-01",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "appplan"
+            },
+            "properties": {
+                "name": "[parameters('appplanName')]",
+                "sku": "[parameters('appplanSKU')]",
+                "workerSize": "[parameters('appplanWorkerSize')]",
+                "numberOfWorkers": 1
+            }
+        }
+    ],
+    "variables": {
+        "chennaiappName": "[concat('chennaiapp', uniqueString(resourceGroup().id))]"
+    }
+}
